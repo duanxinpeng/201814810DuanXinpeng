@@ -8,18 +8,11 @@ import numpy as np
 import nltk
 from nltk.corpus import wordnet
 import re
-##得到一个词的同义词
-'''
-def getSynonym(word):
-    synonyms=[]
-    for syn in wordnet.synsets(word):
-        for lemma in syn.lemmas():
-            synonyms.append(lemma.name())
-    return synonyms
-'''
 
-##split bigstring to wordlist
+
+
 labellist=["alt.atheism","comp.graphics","comp.os.ms-windows.misc","comp.sys.ibm.pc.hardware","comp.sys.mac.hardware","comp.windows.x","misc.forsale","rec.autos","rec.motorcycles","rec.sport.baseball","rec.sport.hockey","sci.crypt","sci.electronics","sci.med","sci.space","soc.religion.christian","talk.politics.guns","talk.politics.mideast","talk.politics.misc","talk.religion.misc"]
+##split bigstring to wordlist
 def textParse(bigString):
     #tb=TextBlob(bigString)
     #words=tb.words.singularize().lemmatize().lower()##
@@ -33,16 +26,15 @@ def textParse(bigString):
     words=[word.lemmatize('v') for word in words]#过去式、进行时变一般形式
     cacheStopWords=pw.words("english")#得到stopwords
     words=[word for word in words if word not in cacheStopWords]## remove stopwords
-
     return words
-#对dataStr进行预处理
+
+#对dataStr进行预处理,去掉频率低于15的词语，并返回对应的vec
 def preDataStr(dataStr):
-
-    #tf=[]
-
     numDocs=len(dataStr)
     vocabSet=createVocabList(dataStr)
     numWords=len(vocabSet)
+
+    #这样肯定是不行的，这样的复杂度太高了
     '''
     for word in vocabSet:
         num=0
@@ -80,6 +72,7 @@ def preDataStr(dataStr):
         #tf.append(wf.copy())### memory error??不能用wf,因为wf是在不断的增长的！！
         tf.append(tmptf)
     newVocabSet=[]
+
     for word in vocabSet:# delete the wf <=15
         if(wf[word]>15):
             newVocabSet.append(word)
@@ -100,6 +93,7 @@ def preDataStr(dataStr):
 
 
 ##get the vector model of wordlists
+'''
 def getVec(datastrs):
     vocabSet=createVocabList(datastrs)
     docNum=len(datastrs)
@@ -135,15 +129,16 @@ def getVec(datastrs):
 
     np.save("dataset.npy",dataset)
     return dataset
+'''
 ## get a vocabulary set from a dataset
 def createVocabList(dataset):
     vocabSet=set([])
     for doc in dataset:
         vocabSet=vocabSet|set(doc)
     return list(vocabSet)
+
 ## load documnts from the directory,and return the vsm of all the documents
 def loadData():
-
     dirs = os.listdir('G:\\Course\\DataMining\\201814810DuanXinpeng\\20news-18828')
     dataStrs = []
     fullWords=[]
@@ -160,9 +155,7 @@ def loadData():
         label+=1
     #np.save("dataStr.npy", dataStrs)
     #np.save("labels.npy",labls)
-
     dataset=preDataStr(dataStrs)
-
     #dataStr=np.load('dataStr.npy')
    # labls=np.load('labels.npy')
     #labls=[]
