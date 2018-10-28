@@ -9,6 +9,9 @@ import nltk
 from nltk.corpus import wordnet
 import re
 
+import operator
+from sklearn.model_selection import train_test_split
+
 
 
 labellist=["alt.atheism","comp.graphics","comp.os.ms-windows.misc","comp.sys.ibm.pc.hardware","comp.sys.mac.hardware","comp.windows.x","misc.forsale","rec.autos","rec.motorcycles","rec.sport.baseball","rec.sport.hockey","sci.crypt","sci.electronics","sci.med","sci.space","soc.religion.christian","talk.politics.guns","talk.politics.mideast","talk.politics.misc","talk.religion.misc"]
@@ -151,7 +154,7 @@ def loadData():
             words=textParse(bigstring)
             dataStrs.append(words)
             fullWords.extend(words)
-        labls.append(label)
+            labls.append(label)
         label+=1
     #np.save("dataStr.npy", dataStrs)
     #np.save("labels.npy",labls)
@@ -159,8 +162,55 @@ def loadData():
     #dataStr=np.load('dataStr.npy')
    # labls=np.load('labels.npy')
     #labls=[]
-    return dataset, labls
+    X_train,X_test,y_train,y_test=train_test_split(dataset,labls,test_size=0.2,random_state=42)
+    #accuracy=test(X_test,X_train,y_test,y_train)
+    #return accuracy
+    return X_train,X_test,y_train,y_test
 
-#if __name__=="__main__":
- #   dataStr,labels=loadData()
-  #  dataset=preDataStr(dataStr)
+##普通knn
+def knn(inX,dataSet,labels,k):
+    numDoc=len(dataSet)
+    dataSet=np.array(dataSet)
+
+    ## Euclidean distance
+    inX=np.array(inX)
+    diffMat=np.tile(inX,(numDoc,1))-dataSet
+    sqDiffMat=diffMat**2
+    sqDiffMat=sqDiffMat.sum(axis=1)
+    distance=sqDiffMat**0.5
+
+
+    ##cosine
+    cos=[]
+    for i in range(numDoc):
+        cos.append(np.dot(inX,dataSet[i]))
+    lenInX=inX**2
+    lenInX=lenInX.sum()**0.5
+    lenDataSet=dataSet**2
+    lenDataSet=lenDataSet.sum(axis=1)**0.5
+    lenth=lenDataSet*lenInX
+    cos=cos/lenth
+
+    sortedDistIndecies=distance.argsort()# 从小到大返回相应元素在原数组的index。
+    classCount={}
+    for i in range(k):
+        voteIlabel=labels[sortedDistIndecies[i]]
+        classCount[voteIlabel]=classCount.get(voteIlabel,0)+1
+    sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
+    return sortedClassCount[0][0]
+
+def test(testSet,dataSet,testLabels,dataLabels):
+    dataNum=len(dataSet)
+    testNum=len(testSet)
+    right=0
+    wrong=0
+    for i in range(testNum):
+        res=knn(testSet[i],dataSet,dataLabels,5)
+        if(res==testLabels[i]):
+            right=right+1
+
+    return right/dataNum
+
+if __name__=="__main__":
+    dataStr,labels=loadData()
+    dataset=preDataStr(dataStr)
