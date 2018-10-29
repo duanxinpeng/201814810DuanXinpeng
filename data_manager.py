@@ -23,8 +23,9 @@ def doc_load():
         label=label+1
     return docs_list,labels_list
 
-def __string_split(str):
+def _string_split(str):
     '''
+    internal
     :param str:
     :return: 把str分割成的单词数组
     '''
@@ -49,7 +50,7 @@ def doc_split(docs_list):
     '''
     words_list=[]
     for doc in docs_list:
-        words_list.append(__string_split(str(doc)))
+        words_list.append(_string_split(str(doc)))
     return words_list
 
 def words_statistics(words_list):
@@ -61,19 +62,25 @@ def words_statistics(words_list):
     word_frequency=dict()# 单词在所有文档中出现的频率
     word_df=dict()
     word_doc_tf=dict()#倒排索引
+    doc_word_tf=[]#
     for doc in words_list:
         first_time = True  # 判断是否是在doc中第一次出现，用于统计df
-        print(index)
-        index=index+1
+        word_tf=dict()
         for word in doc:
+            word_tf[word]=word_tf.get(word,0)+1
             word_frequency[word] = word_frequency.get(word, 0) + 1### word_frequency
-            if(first_time):###word_df
-                word_df[word]=word_df.get(word,0)+1
-                first_time=False
+            #错了，
+            # if(first_time):###word_df
+            #     word_df[word]=word_df.get(word,0)+1
+            #     first_time=False
             if(word_doc_tf.__contains__(word)):#word_doc_tf
                 word_doc_tf[word][words_list.index(doc)]=word_doc_tf[word].get(words_list.index(doc),0)+1
             else:
                 word_doc_tf[word]={words_list.index(doc):1}
+        doc_word_tf.append(word_tf)
+    for doc in doc_word_tf:
+        for word in doc.keys():
+            word_df[word]=word_df.get(word,0)+1
 
 
-    return word_doc_tf,word_frequency,word_df
+    return word_doc_tf,word_frequency,word_df,doc_word_tf

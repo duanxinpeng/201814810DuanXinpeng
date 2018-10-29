@@ -1,32 +1,43 @@
+import numpy as np
+import operator
 
-def cos_compute()
-def knn(inX,dataSet,labels,k):
-    numDoc=len(dataSet)
-    dataSet=np.array(dataSet)
-
-    ## Euclidean distance
-    inX=np.array(inX)
-    diffMat=np.tile(inX,(numDoc,1))-dataSet
-    sqDiffMat=diffMat**2
-    sqDiffMat=sqDiffMat.sum(axis=1)
-    distance=sqDiffMat**0.5
-
-
-    ##cosine
+def cos_compute(x_test,x_train):
+    '''
+    计算x_test和x_train的cos
+    :param x_test:numpy.array
+    :param x_train: numpy.array
+    :return:
+    '''
+    len_test=(x_test**2).sum()**0.5
+    len_train=(x_train**2).sum(axis=1)**0.5
+    num_train=len(x_train)
     cos=[]
-    for i in range(numDoc):
-        cos.append(np.dot(inX,dataSet[i]))
-    lenInX=inX**2
-    lenInX=lenInX.sum()**0.5
-    lenDataSet=dataSet**2
-    lenDataSet=lenDataSet.sum(axis=1)**0.5
-    lenth=lenDataSet*lenInX
-    cos=cos/lenth
+    for i in range(num_train):
+        cos.append(np.dot(x_test,x_train[i]))
+    cos=cos/(len_test*len_train)
+    return cos
 
-    sortedDistIndecies=distance.argsort()# 从小到大返回相应元素在原数组的index。
+def euclidean_compute(x_test,x_train):
+    '''
+    计算欧几里得距离
+    :param x_test: numpy.array
+    :param x_train: numpy.array
+    :return:
+    '''
+    num_train=len(x_train)
+    x_test=np.tile(x_test,(num_train,1))
+    test_minus_train=x_test-x_train
+    square=test_minus_train**2
+    sum=square.sum(axis=1)
+    distance=sum**0.5
+    return distance
+
+def knn_cal(x_test,x_train,y_train,k):
+    distance=euclidean_compute(x_test,x_train)
+    sortedDistIndecies=distance.argsort()
     classCount={}
     for i in range(k):
-        voteIlabel=labels[sortedDistIndecies[i]]
+        voteIlabel=y_train[sortedDistIndecies[i]]
         classCount[voteIlabel]=classCount.get(voteIlabel,0)+1
     sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
     return sortedClassCount[0][0]
