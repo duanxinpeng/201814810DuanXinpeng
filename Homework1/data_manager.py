@@ -83,11 +83,14 @@ def words_statistics(words_list):
     '''
     index=0
     #word_frequency=dict()# 单词在所有文档中出现的频率
-    word_df=dict()
-    word_doc_tf=dict()#倒排索引
-    doc_word_tf=[]#
+    word_df=dict()   #每个单词的df
+    word_doc_tf=dict()#每个单词在哪些文档中出现过
+    doc_word_tf=[]#  #每个文档中都包含哪些单词
+
+    #统计word_doc_tf,doc_word_tf
     for doc in words_list:
-        first_time = True  # 判断是否是在doc中第一次出现，用于统计df
+        #思想出现了问题，根本不行
+        #first_time = True  # 判断是否是在doc中第一次出现，用于统计df
         word_tf=dict()
         for word in doc:
             word_tf[word]=word_tf.get(word,0)+1
@@ -101,9 +104,13 @@ def words_statistics(words_list):
             else:
                 word_doc_tf[word]={words_list.index(doc):1}
         doc_word_tf.append(word_tf)
+
+    #统计word_df
     for doc in doc_word_tf:
         for word in doc.keys():
             word_df[word]=word_df.get(word,0)+1
+
+    #通过word_df计算word_idf
     num_docs=len(words_list)
     word_idf=dict()
     for word in word_df:

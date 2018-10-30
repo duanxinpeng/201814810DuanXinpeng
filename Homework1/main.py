@@ -1,6 +1,5 @@
-import data_manager as dm
 import math
-import knn
+from Homework1 import knn, data_manager as dm
 from sklearn.model_selection import train_test_split
 
 FREQUENCY=15
@@ -15,18 +14,19 @@ def _tf_idf(word_tf_test,word_doc_tf_train,word_idf_train,num_doc_train,doc_word
     :param word_df:
     :return:
     '''
-    word_tf_test=[word for word in word_tf_test if word in list(word_doc_tf_train.keys())]#去掉test文档中没有在训练数据集中出现过的单词
+
+    word_in_test=[word for word in word_tf_test if word in list(word_doc_tf_train.keys())]#去掉test文档中没有在训练数据集中出现过的单词
     x_test=[]
     x_train=[]
     index_train=[]
     doc_index=set()
-    for word in word_tf_test.keys():
+    for word in word_in_test:
         #idf=math.log(num_doc_train/word_df_train.get(word))#其实都是根据训练数据集来进行计算的，可以先计算清楚。
         x_test.append((1+math.log(word_tf_test[word]))*word_idf_train[word])
         doc_index=doc_index|(word_doc_tf_train[word].keys())###合并所有在训练数据集中出现过的文档的index
     for index in doc_index:
         tmp=[]
-        for word in word_tf_test:
+        for word in word_in_test:
             tf=doc_word_tf_train[index].get(word,0)
             if(tf!=0):
                 tf=1+math.log(tf)
@@ -58,7 +58,7 @@ def compute_acc():
     for i in range(num_test):
         x_test,x_train,index_train=_tf_idf(doc_word_tf_test[i],word_doc_tf_train,word_idf_train,num_docs_train,doc_word_tf_train)
         y_train=[Y_train[j] for j in index_train]
-        y_eval=knn.knn_cal(x_test,x_train,y_train,5)
+        y_eval= knn.knn_cal(x_test, x_train, y_train, 5)
         if(y_eval==Y_test[i]):
             num_right=num_right+1
         index+=1
@@ -131,7 +131,7 @@ def compute_acc_without_reload():
     for i in range(num_test):
         x_test,x_train,index_train=_tf_idf(doc_word_tf_test[i],word_doc_tf_train,word_idf_train,num_docs_train,doc_word_tf_train)
         y_train=[Y_train[j] for j in index_train]
-        y_eval=knn.knn_cal(x_test,x_train,y_train,5)
+        y_eval= knn.knn_cal(x_test, x_train, y_train, 5)
         if(y_eval==Y_test[i]):
             num_right=num_right+1
         index+=1
