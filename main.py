@@ -7,7 +7,7 @@ FREQUENCY=15
 
 
 
-def _tf_idf(word_tf,word_doc_tf,word_df,num_doc,doc_word_tf):
+def _tf_idf(word_tf_test,word_doc_tf_train,word_idf_train,num_doc_train,doc_word_tf_train):
     '''
     计算word_tf对应的tf-idf向量，以及其对应的tf-idf_train向量数组
     :param word_tf:
@@ -15,21 +15,22 @@ def _tf_idf(word_tf,word_doc_tf,word_df,num_doc,doc_word_tf):
     :param word_df:
     :return:
     '''
+    word_tf_test=[word for word in word_tf_test if word in list(word_doc_tf_train.keys())]#去掉test文档中没有在训练数据集中出现过的单词
     x_test=[]
     x_train=[]
     index_train=[]
     doc_index=set()
-    for word in word_tf.keys():
-        idf=math.log(num_doc/word_df.get(word))
-        x_test.append((1+math.log(word_tf[word]))*idf)
-        doc_index=doc_index|(word_doc_tf[word].keys())###合并所有出现的文档的index
+    for word in word_tf_test.keys():
+        #idf=math.log(num_doc_train/word_df_train.get(word))#其实都是根据训练数据集来进行计算的，可以先计算清楚。
+        x_test.append((1+math.log(word_tf_test[word]))*word_idf_train[word])
+        doc_index=doc_index|(word_doc_tf_train[word].keys())###合并所有在训练数据集中出现过的文档的index
     for index in doc_index:
         tmp=[]
-        for i in range(len(word_tf.keys())):
-            tf=doc_word_tf[index].get(list(word_tf.keys())[i],0)
+        for word in word_tf_test:
+            tf=doc_word_tf_train[index].get(word,0)
             if(tf!=0):
                 tf=1+math.log(tf)
-            tmp.append(tf*math.log(num_doc/word_df.get(list(word_tf.keys())[i])))
+            tmp.append(tf*word_idf_train[word])
         x_train.append(tmp)
         index_train.append(index)
     return x_test,x_train,index_train
@@ -45,15 +46,18 @@ def compute_acc():
     index=0
     docs_list,labels_list=dm.doc_load()
     words_list=dm.doc_split(docs_list)
-    word_doc_tf, word_df,doc_word_tf=dm.words_statistics(words_list,FREQUENCY)
-    X_train, X_test, Y_train, Y_test=train_test_split(doc_word_tf, labels_list, test_size=0.2, random_state=42)
-    num_test=len(X_test)
-    num_docs=len(doc_word_tf)
+    words_list=dm.words_freq_proc(words_list,FREQUENCY)
+    X_train, X_test, Y_train, Y_test = train_test_split(words_list, labels_list, test_size=0.2, random_state=42)
+    word_doc_tf_train, word_idf_train,doc_word_tf_train=dm.words_statistics(X_train)
+    word_doc_tf_test,word_idf_test,doc_word_tf_test=dm.words_statistics(X_test)
+
+    num_test=len(doc_word_tf_test)
+    num_docs_train=len(doc_word_tf_train)
     num_right=0
     print('Prepare Finished!')
     for i in range(num_test):
-        x_test,x_train,index_train=_tf_idf(X_test[i],word_doc_tf,word_df,num_docs,doc_word_tf)
-        y_train=[labels_list[j] for j in index_train]
+        x_test,x_train,index_train=_tf_idf(doc_word_tf_test[i],word_doc_tf_train,word_idf_train,num_docs_train,doc_word_tf_train)
+        y_train=[Y_train[j] for j in index_train]
         y_eval=knn.knn_cal(x_test,x_train,y_train,5)
         if(y_eval==Y_test[i]):
             num_right=num_right+1
@@ -62,6 +66,8 @@ def compute_acc():
             print(index,'  ',num_right/i)
     return num_right/num_test
 
+
+##以下待修改
 def data_save():
     '''
     读取文件，并保存这些数据
@@ -69,30 +75,44 @@ def data_save():
     '''
     docs_list,labels_list=dm.doc_load()
     words_list=dm.doc_split(docs_list)
-    word_doc_tf, word_df,doc_word_tf=dm.words_statistics(words_list,FREQUENCY)
-    with open('.\\tmp\\word_doc_tf.txt','w') as data:
-        data.write(str(word_doc_tf))
-    with open('.\\tmp\\word_df.txt','w') as data:
-        data.write(str(word_df))
-    with open('.\\tmp\\doc_word_tf.txt','w') as data:
-        data.write(str(doc_word_tf))
-    with open('.\\tmp\\labels_list.txt','w') as data:
-        data.write(str(labels_list))
+    words_list=dm.words_freq_proc(words_list,FREQUENCY)
+    X_train, X_test, Y_train, Y_test = train_test_split(words_list, labels_list, test_size=0.2, random_state=42)
+    word_doc_tf_train, word_idf_train,doc_word_tf_train=dm.words_statistics(X_train)
+    word_doc_tf_test,word_idf_test,doc_word_tf_test=dm.words_statistics(X_test)
+
+    with open('.\\tmp\\word_doc_tf_train.txt','w') as data:
+        data.write(str(word_doc_tf_train))
+    with open('.\\tmp\\word_idf_train.txt','w') as data:
+        data.write(str(word_idf_train))
+    with open('.\\tmp\\doc_word_tf_train.txt','w') as data:
+        data.write(str(doc_word_tf_train))
+    with open('.\\tmp\\doc_word_tf_test.txt','w') as data:
+        data.write(str(doc_word_tf_test))
+    with open('.\\tmp\\Y_train.txt','w') as data:
+        data.write(str(Y_train))
+    with open('.\\tmp\\Y_test.txt','w') as data:
+        data.write(str(Y_test))
 
 def data_load():
-    with open('.\\tmp\\word_doc_tf.txt','r') as data:
+    with open('.\\tmp\\word_doc_tf_train.txt','r') as data:
         tmp=data.read()
-        word_doc_tf=eval(tmp)
-    with open('.\\tmp\\word_df.txt','r') as data:
+        word_doc_tf_train=eval(tmp)
+    with open('.\\tmp\\word_idf_train.txt','r') as data:
         tmp=data.read()
-        word_df=eval(tmp)
-    with open('.\\tmp\\doc_word_tf.txt','r') as data:
+        word_idf_train=eval(tmp)
+    with open('.\\tmp\\doc_word_tf_train.txt','r') as data:
         tmp=data.read()
-        doc_word_tf=eval(tmp)
-    with open('.\\tmp\\labels_list.txt','r') as data:
+        doc_word_tf_train=eval(tmp)
+    with open('.\\tmp\\doc_word_tf_test.txt','r') as data:
         tmp=data.read()
-        labels_list=eval(tmp)
-    return word_doc_tf,word_df,doc_word_tf,labels_list
+        doc_word_tf_test=eval(tmp)
+    with open('.\\tmp\\Y_train.txt','r') as data:
+        tmp=data.read()
+        Y_train=eval(tmp)
+    with open('.\\tmp\\Y_test.txt','r') as data:
+        tmp=data.read()
+        Y_test=eval(tmp)
+    return word_doc_tf_train,word_idf_train,doc_word_tf_train,doc_word_tf_test,Y_train,Y_test
 
 def compute_acc_without_reload():
     '''
@@ -102,15 +122,15 @@ def compute_acc_without_reload():
     index=0
     # docs_list,labels_list=dm.doc_load()
     # words_list=dm.doc_split(docs_list)
-    word_doc_tf, word_df,doc_word_tf,labels_list=data_load()
-    X_train, X_test, Y_train, Y_test=train_test_split(doc_word_tf, labels_list, test_size=0.2, random_state=42)
-    num_test=len(X_test)
-    num_docs=len(doc_word_tf)
+    word_doc_tf_train, word_idf_train,doc_word_tf_train,doc_word_tf_test,Y_train,Y_test=data_load()
+
+    num_test=len(doc_word_tf_test)
+    num_docs_train=len(doc_word_tf_train)
     num_right=0
     print('Prepare Finished!')
     for i in range(num_test):
-        x_test,x_train,index_train=_tf_idf(X_test[i],word_doc_tf,word_df,num_docs,doc_word_tf)
-        y_train=[labels_list[j] for j in index_train]
+        x_test,x_train,index_train=_tf_idf(doc_word_tf_test[i],word_doc_tf_train,word_idf_train,num_docs_train,doc_word_tf_train)
+        y_train=[Y_train[j] for j in index_train]
         y_eval=knn.knn_cal(x_test,x_train,y_train,5)
         if(y_eval==Y_test[i]):
             num_right=num_right+1

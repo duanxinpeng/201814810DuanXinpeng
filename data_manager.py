@@ -2,6 +2,8 @@ import os
 import re
 import textblob as tb
 from nltk.corpus import stopwords as pw
+import math
+
 #global variable
 newsPath='G:\\Course\\DataMining\\201814810DuanXinpeng\\20news-18828'
 
@@ -54,7 +56,7 @@ def doc_split(docs_list):
         words_list.append(_string_split(str(doc)))
     return words_list
 
-def _words_freq_proc(words_list,frequency):
+def words_freq_proc(words_list,frequency):
     '''
     去掉单词在文档中出现频率低于FREQUENCY的词，并返回去掉低频词的words_list
     :param words_list:
@@ -74,14 +76,13 @@ def _words_freq_proc(words_list,frequency):
         new_words_list.append(new_list)
     return new_words_list
 
-def words_statistics(words_list,frequency):
+def words_statistics(words_list):
     '''
     :param words_dict:
     :return:vocab:检测词频，创建词库
     '''
     index=0
     #word_frequency=dict()# 单词在所有文档中出现的频率
-    words_list=_words_freq_proc(words_list,frequency)
     word_df=dict()
     word_doc_tf=dict()#倒排索引
     doc_word_tf=[]#
@@ -103,6 +104,10 @@ def words_statistics(words_list,frequency):
     for doc in doc_word_tf:
         for word in doc.keys():
             word_df[word]=word_df.get(word,0)+1
+    num_docs=len(words_list)
+    word_idf=dict()
+    for word in word_df:
+        word_idf[word]=math.log(num_docs/word_df[word])
 
 
-    return word_doc_tf,word_df,doc_word_tf
+    return word_doc_tf,word_idf,doc_word_tf
