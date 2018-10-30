@@ -6,7 +6,7 @@ Homework1
 其中：
 * data_manager用于数据预处理；
 * knn是K-近邻的具体实现；
-* main用于将两者结合在一起。
+* main用于计算准确率。
 
 可以通过main.compute_acc()，从数据处理开始，直接得到knn准确率；<br>
 也可以先通过main.data_save(),将数据处理结果保存到tmp下的临时文件中，再通过main.compute_acc_without_reload()得到knn算法的准确率。<br>
