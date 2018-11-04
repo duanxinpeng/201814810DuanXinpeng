@@ -48,6 +48,32 @@ def knn_cal(x_test,x_train,y_train,k):
     #判断在x_train中和x_test相似的前k个元素中，属于哪个类的元素更多
     for i in range(k):
         voteIlabel=y_train[sortedDistIndecies[i]]
-        classCount[voteIlabel]=classCount.get(voteIlabel,0)+1
+        classCount[voteIlabel]=classCount.get(voteIlabel,0)+1/distance[sortedDistIndecies[i]]
+    sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
+    return sortedClassCount[0][0]
+def knn_cal1(x_test,x_train,y_train,k):
+    '''
+    knn方法！
+    :param x_test: 测试数据
+    :param x_train: 训练数据
+    :param y_train: 训练数据标签
+    :param k:
+    :return: 返回x_test属于哪一个类
+    '''
+    distance=cos_compute(np.array(x_test),np.array(x_train))#计算x_test和x_train中的每一个元素的距离
+    sortedDistIndecies=distance.argsort()#对上述计算结果进行排序
+    #sortedDistIndecies=sorted(distance,reverse=True)
+    #去掉NaN
+    sortedindex=[]
+    for v in sortedDistIndecies:
+        if distance[v]!=np.NaN:
+            sortedindex.append(v)
+    l=len(sortedindex)
+    classCount={}
+    #distance=list(distance)
+    #判断在x_train中和x_test相似的前k个元素中，属于哪个类的元素更多
+    for i in range(k):
+        voteIlabel=y_train[sortedindex[l-1-i]]
+        classCount[voteIlabel]=classCount.get(voteIlabel,0)+1/i
     sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
     return sortedClassCount[0][0]
