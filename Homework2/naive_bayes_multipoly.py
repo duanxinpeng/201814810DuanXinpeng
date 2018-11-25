@@ -9,8 +9,8 @@ def calc_x_y_prob(x_train,y_train):
     计算P(x|y)
     :param x_train: list
     :param y_train: list
-    :return: res：20个类的单词的概率
-    :return: num_all:20个类中单词总数，用于拉普拉斯平滑
+    :return: res：dict list 20个类的单词的概率
+    :return: num_all: list 20个类中单词总数，用于拉普拉斯平滑
     '''
     res=[{} for i in range(NUM_CLASS)]
     num_all=[0]*NUM_CLASS
@@ -39,11 +39,11 @@ def calc_y_prob(Y_train):
 
 def naive_bayes(x_test,x_y_prob,y_prob,num_all):
     '''
-    伯努利类型朴素贝叶斯分类
+    朴素贝叶斯分类，多项式模型
     :param x_test: list
     :param x_y_prob: dict list P(x|y)
     :param y_prob: list P(y)
-    :param num_all list 平滑参数
+    :param num_all list 平滑参数,用于拉普拉斯平滑
     :return: predict label
     '''
     res_prob=[0]*NUM_CLASS
