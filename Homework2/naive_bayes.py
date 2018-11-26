@@ -46,6 +46,7 @@ def calc_x_y_prob(X_train,Y_train,vocab):
             x_y_num[Y_train[i]][vocab.index(word)]+=1# 相应的class里的相应的单词的个数加1
         y_num[Y_train[i]]+=1
 
+
     x_y_prob=[]###某个单词存在的概率； 不存在的概率与存在概率互斥，所以直接减一即可
     for i in range(NUM_CLASS):#求得概率
         x_y_prob.append(list(np.array(x_y_num[i])/y_num[i]))
@@ -85,13 +86,22 @@ def main():
     x_y_prob=calc_x_y_prob(X_train,Y_train,vocab)
     #predict X_test and calculate accuracy of prediction.
     num_right=0
+    x_label=[]
+    y_label=[]
+    pred_test=[]
     for i in range(len(X_test)):
         label=naive_bayes(X_test[i],x_y_prob,y_prob,vocab)
+        pred_test.append(label)
         if(label==Y_test[i]):
             num_right+=1
-        if((i+1)%10==0):
+        if((i+1)%200==0):
             print(num_right/(i+1))
-    return num_right/len(X_test)
+            x_label.append((i+1))
+            y_label.append(num_right/(i+1))
+    x_label.append(len(X_test))
+    y_label.append(num_right/len(X_test))
+    #return pred_test
+    return pred_test,x_label,y_label
 
 
 def data_load():
@@ -108,7 +118,7 @@ def data_load():
     with open('.\\tmp\\X_test.txt','r') as data:
         tmp=data.read()
         X_test=eval(tmp)
-    with open('.\\tmp\\Y_test','r') as data:
+    with open('.\\tmp\\Y_test.txt','r') as data:
         tmp=data.read()
         Y_test=eval(tmp)
     return X_train,Y_train,X_test,Y_test
@@ -120,7 +130,7 @@ def data_save():
     '''
     docs_list, labels_list = dm.doc_load()
     words_list = dm.doc_split(docs_list)
-    #words_list1 = words_freq_proc(words_list, 15)
+    words_list = dm.words_freq_proc(words_list, 15)
     X_train, X_test, Y_train, Y_test = train_test_split(words_list, labels_list, test_size=0.2, random_state=42)
 
     with open('.\\tmp\\X_train.txt','w') as data:
@@ -129,16 +139,16 @@ def data_save():
         data.write(str(Y_train))
     with open('.\\tmp\\X_test.txt','w') as data:
         data.write(str(X_test))
-    with open('.\\tmp\\Y_test','w') as data:
+    with open('.\\tmp\\Y_test.txt','w') as data:
         data.write(str(Y_test))
 
-if __name__=="__main__":
-    print("begin")
-    flag=True#中间数据存在与否
-    if(True):
-        main()
-    else:
-        data_save()
-        main()
+# if __name__=="__main__":
+#     print("begin")
+#     flag=False#中间数据存在与否
+#     if(flag):
+#         main()
+#     else:
+#         data_save()
+#         #main()
 
 

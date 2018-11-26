@@ -71,13 +71,22 @@ def main():
     #y_x_num,y_num=y_word_freq(X_train,Y_train)#每个类中所有文档中的所有单词的词频和每个类中所有文档中的所有单词的总和
     x_y_prob,num_all=calc_x_y_prob(X_train,Y_train)
     num_right=0
+    x_label=[]
+    y_label=[]
+    pred_label=[]
     for i in range(len(X_test)):
         label=naive_bayes(X_test[i],x_y_prob,y_prob,num_all)
+        pred_label.append(label)
         if(label==Y_test[i]):
             num_right+=1
-        if((i+1)%10==0):
+        if((i+1)%200==0):
             print(num_right/(i+1))
-    return num_right/len(X_test)
+            x_label.append(i+1)
+            y_label.append(num_right/(i+1))
+    x_label.append(len(X_test))
+    y_label.append(num_right/len(X_test))
+    #return pred_label
+    return pred_label,x_label,y_label
 
 
 def data_load():
@@ -94,7 +103,7 @@ def data_load():
     with open('.\\tmp\\X_test.txt','r') as data:
         tmp=data.read()
         X_test=eval(tmp)
-    with open('.\\tmp\\Y_test','r') as data:
+    with open('.\\tmp\\Y_test.txt','r') as data:
         tmp=data.read()
         Y_test=eval(tmp)
     return X_train,Y_train,X_test,Y_test
@@ -115,16 +124,16 @@ def data_save():
         data.write(str(Y_train))
     with open('.\\tmp\\X_test.txt','w') as data:
         data.write(str(X_test))
-    with open('.\\tmp\\Y_test','w') as data:
+    with open('.\\tmp\\Y_test.txt','w') as data:
         data.write(str(Y_test))
 
-if __name__=="__main__":
-    print("begin")
-    flag=True
-    if(flag):
-        main()
-    else:
-        data_save()
-        main()
+#if __name__=="__main__":
+    #print("begin")
+    #flag=True
+    #if(flag):
+    #    main()
+    #else:
+     #   data_save()
+     #   main()
 
 
