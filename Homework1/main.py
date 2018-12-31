@@ -1,5 +1,6 @@
 import math
 from Homework1 import knn, data_manager as dm
+from Homework1 import knn
 from sklearn.model_selection import train_test_split
 import numpy as np
 
@@ -115,33 +116,26 @@ def data_load():
         Y_test=eval(tmp)
     return word_doc_tf_train,word_idf_train,doc_word_tf_train,doc_word_tf_test,Y_train,Y_test
 
-def compute_acc_without_reload():
-    '''
-    计算准确率
-    :return: 返回准确率
-    '''
-    index=0
-    # docs_list,labels_list=dm.doc_load()
-    # words_list=dm.doc_split(docs_list)
-    word_doc_tf_train, word_idf_train,doc_word_tf_train,doc_word_tf_test,Y_train,Y_test=data_load()
 
-    num_test=len(doc_word_tf_test)
-    num_docs_train=len(doc_word_tf_train)
-    num_right=0
-    print('Prepare Finished!')
+def compute_acc_without_reload():
+    index = 0
+    word_doc_tf_train, word_idf_train, doc_word_tf_train, doc_word_tf_test, Y_train, Y_test = data_load()
+
+    num_test = len(doc_word_tf_test)
+    num_docs_train = len(doc_word_tf_train)
+    num_right = 0
+    print('Prepare already Finished!')
     for i in range(num_test):
-        x_test,x_train,index_train=_tf_idf(doc_word_tf_test[i],word_doc_tf_train,word_idf_train,num_docs_train,doc_word_tf_train)
-        y_train=[Y_train[j] for j in index_train]
-        # print(x_test,"\n")
-        # print(x_train,"\n")
-        #print(knn.euclidean_compute(np.array(x_test),np.array(x_train)))
-        y_eval= knn.knn_cal(x_test, x_train, y_train, 25)
-        if(y_eval==Y_test[i]):
-            num_right=num_right+1
-        index+=1
-        if(index%10==0):
-            print(index,'  ',num_right/i)
-    return num_right/num_test
+        x_test, x_train, index_train = _tf_idf(doc_word_tf_test[i], word_doc_tf_train, word_idf_train, num_docs_train,
+                                              doc_word_tf_train)
+        y_train = [Y_train[j] for j in index_train]
+        y_eval = knn.knn_cal(x_test, x_train, y_train, 5)
+        if (y_eval == Y_test[i]):
+            num_right = num_right + 1
+        index += 1
+        if (index % 10 == 0):
+            print(index, ' ', num_right / i)
+    return num_right / num_test
 
 def compute_without_reload():
     '''
