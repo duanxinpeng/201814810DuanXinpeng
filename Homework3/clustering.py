@@ -121,11 +121,11 @@ def density_based_clustering(data,labels,eps,minPts):
     #print(dbc_eval)
     return dbc_eval
 
-# def gaussian_mixtures(data,clusters,n_components):
-#     mix=GaussianMixture(n_components=n_components)
-#     mix_res=mix.fit_predict(data.toarray())
-#     mix_eval=normalized_mutual_info_score(clusters,mix_res)
-#     print(mix_eval)
+def gaussian_mixtures(data,clusters,n_components):
+    mix=GaussianMixture(n_components=n_components,covariance_type='spherical')
+    mix_res=mix.fit(data.toarray()).predict(data.toarray())
+    mix_eval=normalized_mutual_info_score(clusters,mix_res)
+    return mix_eval
 
 def all_algorithms():
     res1=[[]for i in range(4)]
@@ -147,6 +147,7 @@ def all_algorithms():
 
     return res1
 
+
 def plot_mean_shift():
     res1=[]
     res2=[]
@@ -161,6 +162,20 @@ def plot(res):
     x1=[0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4]
     p1=plt.scatter(x1,res)
     plt.title("NMI-eps")
+    plt.show()
+
+def plot_gaussian():
+    dataset,labels,num=gen_dataset()
+    res=[]
+    x=[]
+    for i in range(20):
+        x.append(65+i)
+        tmp=0
+        for j in range(5):
+            tmp+=gaussian_mixtures(dataset,labels,65+i)
+        res.append(tmp/5)
+    p1=plt.scatter(x,res)
+    plt.title("Gaussian-NMI-n_componts")
     plt.show()
 def plotAcc():
     res=all_algorithms()
